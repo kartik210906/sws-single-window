@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: sws_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: sih_admin
+      POSTGRES_PASSWORD: sih_secure_password_99
+      POSTGRES_DB: sws_auth_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mongodb:
+    image: mongo:6.0
+    container_name: sws_mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  backend:
+    build: ./backend
+    container_name: sws_express_backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: 5000
+      MONGO_URI: mongodb://mongodb:27017/sws_db
+      DATABASE_URL: postgresql://sih_admin:sih_secure_password_99@postgres:5432/sws_auth_db?schema=public
+    depends_on:
+      - postgres
+      - mongodb
+
+  ai-service:
+    build: ./ai-service
+    container_name: sws_fastapi_ai
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    volumes:
+      - ./ai-service/chroma_db:/app/chroma_db
+    depends_on:
+      - backend
+
+  frontend:
+    build: ./frontend
+    container_name: sws_nextjs_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:5000
+      NEXT_PUBLIC_AI_SERVICE_URL: http://localhost:8000
+    depends_on:
+      - backend
+      - ai-service
+
+volumes:
+  postgres_data:
+  mongodb_data:

@@ -1,0 +1,28 @@
+# Node.js
+node_modules/
+dist/
+build/
+.next/
+out/
+.env
+.env*.local
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local Databases & Storage
+uploads/
+chroma_db/
+db.sqlite
+.db/
+
+# Editor / System Files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
